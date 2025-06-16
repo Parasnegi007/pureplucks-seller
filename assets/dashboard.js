@@ -2,6 +2,19 @@
 window.addEventListener("DOMContentLoaded", function () {
     loadCategories();
 });
+// At the very top of dashboard.js or inside a <script> in dashboard.html
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("sellerAuthToken");
+  if (!token) {
+    // Redirect to seller login page if not logged in
+    window.location.href = "seller.html";
+  }
+});
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("sellerAuthToken");
+    window.location.href = "seller.html"; // Redirect to login
+});
+
 // ✅ Add New Category
 async function addNewCategory() {
     const name = document.getElementById("newCategoryName").value.trim();
@@ -548,31 +561,12 @@ async function fetchDashboardStats() {
         console.error("Error fetching dashboard stats:", error);
     }
 }
+
 // Global variables for the chart
 let totalOrdersChart;
 let currentTimePeriod = "daily"; // Default time period
 let userGrowthChart;
 let UserDistributionChart;
-
-// Fetch and display dashboard stats
-window.addEventListener("DOMContentLoaded", fetchDashboardStats);
-async function fetchDashboardStats() {
-    try {
-        const response = await fetch("http://localhost:5000/api/dashboard/stats");
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        document.getElementById("totalUsers").textContent = data.totalUsers || 0;
-        document.getElementById("totalProducts").textContent = data.totalProducts || 0;
-        document.getElementById("totalOrders").textContent = data.totalOrders || 0;
-        document.getElementById("totalSales").textContent = `₹${data.totalSales || 0}`;
-    } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
-    }
-}
-
 // Function to render the Total Orders chart
 function renderTotalOrdersChart(labels, data) {
     const ctx = document.getElementById("totalOrdersChart").getContext("2d");
@@ -606,10 +600,25 @@ function renderTotalOrdersChart(labels, data) {
     });
 }
 
-// Fetch and update Total Orders chart data
+// ✅ Function to Fetch and Update Total Orders Chart
 async function updateTotalOrdersChart() {
+    const token = localStorage.getItem("sellerAuthToken"); // ✅ Added token fetch
+    if (!token) {
+        window.location.href = "seller.html"; // ✅ Redirect if not authenticated
+        return;
+    }
+
     try {
-        const response = await fetch(`http://localhost:5000/api/dashboard/orders?timePeriod=${currentTimePeriod}`);
+        const response = await fetch(`http://localhost:5000/api/dashboard/orders?timePeriod=${currentTimePeriod}`, {
+            headers: {
+                Authorization: `Bearer ${token}` // ✅ Added auth header
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const { labels, data } = await response.json();
         renderTotalOrdersChart(labels, data);
     } catch (error) {
@@ -649,16 +658,15 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("totalProductsChartContainer").style.display = "none";
 });
 
-
 // Event listener for the Total Users card
 document.getElementById("totalUsers").addEventListener("click", () => {
-    hideAllCharts(); // ✅ Hide all previous charts
-
-    document.getElementById("userGrowthSection").style.display = "block"; // ✅ Show Growth Chart
-    document.getElementById("chartControls").style.display = "flex"; // ✅ Keep time period buttons visible
-    document.getElementById("toggleChartBtn").style.display = "block"; // ✅ Show Toggle Button
+    hideAllCharts();
+    document.getElementById("userGrowthSection").style.display = "block";
+    document.getElementById("chartControls").style.display = "flex";
+    document.getElementById("toggleChartBtn").style.display = "block";
     document.getElementById("totalProductsChartContainer").style.display = "none";
-    currentChartType = "growth"; // ✅ Set active chart type
+    currentChartType = "growth";
+    currentTimePeriod = 'daily'; // or 'weekly', 'monthly', 'yearly'
     updateUserGrowthChart();
 });
 
@@ -666,41 +674,47 @@ function hideAllCharts() {
     document.getElementById("userGrowthSection").style.display = "none";
     document.getElementById("userDistributionSection").style.display = "none";
     document.getElementById("totalOrdersChartContainer").style.display = "none";
+    document.getElementById("toggleChartBtn").style.display = "none"; 
     document.getElementById("totalProductsChartContainer").style.display = "none";
-    document.getElementById("orderControls").style.display = "none"; // Hide chart controls initially
+    document.getElementById("orderControls").style.display = "none";
 }
- 
-// Function to fetch and update the User Growth chart
-// Function to fetch and update the User Growth chart
+// Fetch and update the User Growth chart
 async function updateUserGrowthChart() {
     try {
-        const response = await fetch(`http://localhost:5000/api/dashboard/users-growth?timePeriod=${currentTimePeriod}`);
+        const token = localStorage.getItem("sellerAuthToken"); // Ensure the correct token key
+        const response = await fetch(`http://localhost:5000/api/dashboard/users-growth?timePeriod=${currentTimePeriod}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
         const data = await response.json();
+        console.log("Received user growth data:", data);
 
         if (!data || !Array.isArray(data.labels) || !Array.isArray(data.data)) {
             throw new Error("Invalid data received for User Growth chart.");
         }
 
-        renderUserGrowthChart(data.labels, data.data);  // ✅ Pass correct structure
+        renderUserGrowthChart(data.labels, data.data);
     } catch (error) {
         console.error("Error updating User Growth chart:", error);
     }
 }
 
 
-// Function to handle time period changes
+// Change time period
 function changeTimePeriod(period) {
-    currentTimePeriod = period; // ✅ Update the selected time period
+    currentTimePeriod = period;
 
     if (currentChartType === "growth") {
-        updateUserGrowthChart(); // ✅ Update only Growth Chart
+        updateUserGrowthChart();
     } else if (currentChartType === "orders") {
-        updateTotalOrdersChart(); // ✅ Update only Orders Chart
+        updateTotalOrdersChart();
     } else if (currentChartType === "products") {
-        updateTotalProductsChart(); // ✅ Update only Total Products chart
+        updateTotalProductsChart();
     }
-    
 }
+
 // Populate cities dynamically
 async function populateCities() {
     try {
@@ -708,7 +722,7 @@ async function populateCities() {
         const cities = await response.json();
 
         const citySelector = document.getElementById("citySelector");
-        citySelector.innerHTML = '<option value="all">All Cities</option>'; // Reset dropdown
+        citySelector.innerHTML = '<option value="all">All Cities</option>';
 
         cities.forEach(city => {
             const option = document.createElement("option");
@@ -721,7 +735,7 @@ async function populateCities() {
     }
 }
 
-// Update User Distribution chart by city
+// Update User Distribution chart
 async function updateUserDistributionChart() {
     try {
         const response = await fetch("http://localhost:5000/api/dashboard/users-by-state");
@@ -731,12 +745,13 @@ async function updateUserDistributionChart() {
             throw new Error("Invalid data received for User Distribution chart.");
         }
 
-        renderUserDistributionChart(data.states, data.counts); // ✅ Pass fetched data to the chart
+        renderUserDistributionChart(data.states, data.counts);
     } catch (error) {
         console.error("Error updating User Distribution chart:", error);
     }
 }
 
+// Render User Growth Chart
 function renderUserGrowthChart(labels, data) {
     const ctx = document.getElementById("userGrowthChart").getContext("2d");
 
@@ -768,13 +783,9 @@ function renderUserGrowthChart(labels, data) {
             onClick: async (event, elements) => {
                 if (elements.length && currentTimePeriod === "yearly") {
                     const index = elements[0].index;
-                    const clickedMonthLabel = labels[index]; // e.g., "March"
-                    console.log("Clicked month:", clickedMonthLabel);
-
-                    const monthNumber = new Date(`${clickedMonthLabel} 1, 2023`).getMonth(); // 0-based
-                    const year = new Date().getFullYear(); // Update if dynamic
-
-                    // Fetch daily data for clicked month
+                    const clickedMonthLabel = labels[index];
+                    const monthNumber = new Date(`${clickedMonthLabel} 1, 2023`).getMonth();
+                    const year = new Date().getFullYear();
                     await updateUserGrowthChartForMonth(year, monthNumber);
                 }
             },
@@ -787,21 +798,21 @@ function renderUserGrowthChart(labels, data) {
     });
 }
 
-
+// Render User Distribution Chart
 function renderUserDistributionChart(labels, data) {
     const ctx = document.getElementById("userDistributionChart").getContext("2d");
 
     if (userDistributionChart) {
-        userDistributionChart.destroy(); // ✅ Prevent duplicate charts
+        userDistributionChart.destroy();
     }
 
     userDistributionChart = new Chart(ctx, {
         type: "pie",
         data: {
-            labels: labels, // ✅ State names
+            labels: labels,
             datasets: [{
                 label: "Users by State",
-                data: data, // ✅ Number of users per state
+                data: data,
                 backgroundColor: [
                     "rgba(255, 99, 132, 0.6)",
                     "rgba(54, 162, 235, 0.6)",
@@ -831,6 +842,7 @@ function renderUserDistributionChart(labels, data) {
     });
 }
 
+// Toggle Chart View
 async function toggleChart() {
     const userGrowthSection = document.getElementById("userGrowthSection");
     const userDistributionSection = document.getElementById("userDistributionSection");
@@ -838,59 +850,43 @@ async function toggleChart() {
 
     if (currentChartType === "growth") {
         currentChartType = "geographical";
-
         userGrowthSection.style.display = "none";
         userDistributionSection.style.display = "block";
-
-        toggleChartBtn.textContent = "Show Growth Chart"; // ✅ Change button text
-
-        updateUserDistributionChart(); // ✅ Fetch and render pie chart
+        toggleChartBtn.textContent = "Show Growth Chart";
+        updateUserDistributionChart();
     } else {
         currentChartType = "growth";
-
         userDistributionSection.style.display = "none";
         userGrowthSection.style.display = "block";
-
-        toggleChartBtn.textContent = "Show User Distribution"; // ✅ Change button text
+        toggleChartBtn.textContent = "Show User Distribution";
     }
 }
-// Global variable for the Total Products chart
+
+// Total Products chart setup
 let totalProductsChart;
 document.getElementById("totalProducts").addEventListener("click", () => {
-    hideAllCharts(); // Hide other charts
-
-    document.getElementById("totalProductsChartContainer").style.display = "block"; // Show Products Chart
-    document.getElementById("chartControls").style.display = "flex"; // ✅ Show Time Period Controls
-
-    currentChartType = "products"; // Set active chart type
-    updateTotalProductsChart(); // Fetch and render chart
+    hideAllCharts();
+    document.getElementById("totalProductsChartContainer").style.display = "block";
+    document.getElementById("chartControls").style.display = "flex";
+    currentChartType = "products";
+    updateTotalProductsChart();
 });
 
-function hideAllCharts() {
-    document.getElementById("userGrowthSection").style.display = "none";
-    document.getElementById("userDistributionSection").style.display = "none";
-    document.getElementById("totalOrdersChartContainer").style.display = "none";
-    document.getElementById("toggleChartBtn").style.display = "none"; 
-}
-
-
-// ✅ Function to Render the Total Products Chart
+// Render Total Products Pie Chart
 function renderTotalProductsChart(labels, data) {
     const ctx = document.getElementById("totalProductsChart").getContext("2d");
 
-    // Destroy existing chart to prevent duplication
     if (totalProductsChart) {
         totalProductsChart.destroy();
     }
 
-    // ✅ Change type from "bar" to "pie"
     totalProductsChart = new Chart(ctx, {
-        type: "pie", // ✅ Now it's a pie chart
+        type: "pie",
         data: {
-            labels: labels, // Category names
+            labels: labels,
             datasets: [{
                 label: "Products per Category",
-                data: data, // Number of products per category
+                data: data,
                 backgroundColor: [
                     "rgba(255, 99, 132, 0.6)",
                     "rgba(54, 162, 235, 0.6)",
@@ -920,41 +916,34 @@ function renderTotalProductsChart(labels, data) {
     });
 }
 
-
-// ✅ Function to Fetch Data for the Pie Chart
+// Fetch and update data for Total Products Chart
 async function updateTotalProductsChart() {
     try {
         const response = await fetch("http://localhost:5000/api/products");
         const products = await response.json();
 
-        // Fetch categories to get names instead of IDs
         const categoryResponse = await fetch("http://localhost:5000/api/categories");
         const categories = await categoryResponse.json();
 
-        // Create a mapping of categoryId -> categoryName
         const categoryMap = {};
         categories.forEach(category => {
-            categoryMap[category._id] = category.name; // Assuming _id is category ID
+            categoryMap[category._id] = category.name;
         });
 
-        // Group products by category name
         const categoryCount = {};
         products.forEach(product => {
-            const categoryName = categoryMap[product.categoryId] || "Unknown"; // Get name or default
+            const categoryName = categoryMap[product.categoryId] || "Unknown";
             categoryCount[categoryName] = (categoryCount[categoryName] || 0) + 1;
         });
 
-        // ✅ Modify labels to include product count
         const labels = Object.keys(categoryCount).map(category => `${category} (${categoryCount[category]})`);
         const data = Object.values(categoryCount);
 
-        // Render the pie chart with updated labels
         renderTotalProductsChart(labels, data);
     } catch (error) {
         console.error("Error fetching Total Products data:", error);
     }
 }
-
 
 //USERS 
 async function fetchUsers() {
@@ -1036,13 +1025,13 @@ async function searchUsers() {
 const updateBtn = document.getElementById("updateStatusBtn");
 
 async function loadOrders() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('sellerAuthToken');
     const ordersList = document.getElementById('ordersList');
     ordersList.innerHTML = '<p>Loading orders...</p>';
   
     if (!token) {
       alert("Unauthorized. Please login again.");
-      location.href = "/login.html";
+      location.href = "seller.html";
       return;
     }
   
@@ -1076,7 +1065,7 @@ async function loadOrders() {
               <p><strong>Tracking ID:</strong> ${order.trackingId || 'N/A'}</p>
               <p><strong>Courier Partner:</strong> ${order.courierPartner || 'N/A'}</p>
               <p><strong>Customer:</strong> ${order.userName || 'N/A'}</p>
-              <p><strong>Total:</strong> ₹${order.totalAmount}</p>
+             <p><strong>Final Payable:</strong> <strong>₹${order.finalTotal}</strong></p>
               <p><strong>Payment:</strong> ${order.paymentMethod} (${order.paymentStatus})</p>
               <p><strong>Placed On:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
               <p class="order-status status-${order.orderStatus.toLowerCase()}">Status: ${order.orderStatus}</p>
@@ -1107,7 +1096,7 @@ async function loadOrders() {
   
 
   async function loadOrderDetails(orderId) {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('sellerAuthToken');
     try {
       const res = await fetch(`http://localhost:5000/api/dashboard/order/${orderId}`, {
         headers: {
@@ -1139,8 +1128,15 @@ async function loadOrders() {
       <p><strong>User:</strong> ${order.userName || 'N/A'} (${order.userEmail || ''})</p>
       <p><strong>Registered User:</strong> ${order.isRegisteredUser ? 'Yes' : 'No'}</p>
       <p><strong>Phone:</strong> ${order.userPhone || ''}</p>
-      <p><strong>Total:</strong> ₹${order.totalAmount || order.totalPrice}</p>
-      <p><strong>Payment:</strong> ${order.paymentMethod}</p>
+     <p><strong>Original Total:</strong> ₹${order.totalPrice}</p>
+<p><strong>Shipping Charges:</strong> ₹${order.shippingCharges || 0}</p>
+<p><strong>Discount:</strong> -₹${order.discountAmount || 0}</p>
+<p><strong>Final Payable:</strong> <strong>₹${order.finalTotal}</strong></p>
+<p><strong>Applied Coupons:</strong> ${order.appliedCoupons?.length ? order.appliedCoupons.join(', ') : 'None'}</p>
+<p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+<p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+<p><strong>Transaction ID:</strong> ${order.transactionId || 'N/A'}</p>
+
       <p><strong>Ordered On:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
   
       <h4>Shipping Address:</h4>
@@ -1164,7 +1160,6 @@ async function loadOrders() {
           <input type="text" id="courierPartnerInput" value="${order.courierPartner || ''}">
       </div>
   
-      <button id="updateOrderBtn" data-order-id="${order._id}">Update</button>
   `;
   
   
@@ -1177,10 +1172,105 @@ async function loadOrders() {
       orderDetailsContainer.innerHTML = "<p>Something went wrong.</p>";
     }
   }
+
+  async function searchOrderByFriendlyId() {
+  const input = document.getElementById("orderSearchInput").value.trim();
+  const token = localStorage.getItem("sellerAuthToken");
+
+  if (!input) {
+    alert("Please enter a valid Order ID.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:5000/api/dashboard/order-by-orderid/${input}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      document.getElementById("ordersList").innerHTML = `<p>No order found with Order ID: <strong>${input}</strong></p>`;
+      return;
+    }
+
+    const order = await response.json();
+    document.getElementById("ordersList").innerHTML = renderOrderItem(order); // your function to display it
+
+  } catch (err) {
+    console.error("Error:", err);
+    document.getElementById("ordersList").innerHTML = `<p>Something went wrong while searching.</p>`;
+  }
+}
+function renderOrderItem(order) {
+  const address = order.shippingAddress || {};
+  const formattedAddress = `
+    ${address.street || ''}, ${address.city || ''},<br>
+    ${address.state || ''}, ${address.zipcode || ''},<br>
+    ${address.country || ''}
+  `;
+
+  const itemsHTML = (order.orderItems || [])
+    .map(item => `<li>${item.name} - ₹${item.price} × ${item.quantity}</li>`)
+    .join('');
+
+  const couponsHTML = (order.appliedCoupons || []).length
+    ? `<p><strong>Applied Coupons:</strong> ${order.appliedCoupons.join(', ')}</p>`
+    : '';
+
+  return `
+    <div class="order-details">
+      <p><strong>Mongo Object ID:</strong> ${order._id}</p>
+      <h4>Order ID: ${order.orderId}</h4>
+      <p><strong>Tracking ID:</strong> ${order.trackingId}</p>
+      <p><strong>Courier Partner:</strong> ${order.courierPartner}</p>
+      <p><strong>Status:</strong> ${order.orderStatus}</p>
+      <p><strong>User:</strong> ${order.userName || 'N/A'} (${order.userEmail || ''})</p>
+      <p><strong>Registered User:</strong> ${order.isRegisteredUser ? 'Yes' : 'No'}</p>
+      <p><strong>Phone:</strong> ${order.userPhone || ''}</p>
+      <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+      <p><strong>Total Price:</strong> ₹${order.totalPrice}</p>
+      <p><strong>Discount:</strong> ₹${order.discountAmount || 0}</p>
+      <p><strong>Shipping Charges:</strong> ₹${order.shippingCharges || 0}</p>
+      <p><strong>Final Total:</strong> ₹${order.finalTotal || order.totalPrice}</p>
+      ${couponsHTML}
+      <p><strong>Ordered On:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+
+      <h4>Shipping Address:</h4>
+      <p>${formattedAddress}</p>
+
+      <h4>Items:</h4>
+      <ul>${itemsHTML}</ul>
+
+      <h4>Update Tracking Details:</h4>
+      <div>
+          <label for="trackingIdInput">Tracking ID:</label>
+          <input type="text" id="trackingIdInput" value="${order.trackingId !== "N/A" ? order.trackingId : ''}">
+      </div>
+      <div>
+          <label for="courierPartnerInput">Courier Partner:</label>
+          <input type="text" id="courierPartnerInput" value="${order.courierPartner !== "N/A" ? order.courierPartner : ''}">
+      </div>
+
+      <div class="status-update-section">
+        <label for="orderStatusSelect">Update Status:</label>
+        <select id="orderStatusSelect">
+          <option value="Pending">Pending</option>
+          <option value="Processing">Processing</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+        <button id="updateStatusBtn" class="update-btn">Update Status</button>
+      </div>
+    </div>
+  `;
+}
+
   
   // Update order status
   document.getElementById("updateStatusBtn").addEventListener("click", async () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('sellerAuthToken');
     const orderId = updateBtn.getAttribute("data-order-id");
     const newStatus = document.getElementById("orderStatusSelect").value;
 

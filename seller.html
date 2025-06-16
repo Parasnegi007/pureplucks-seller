@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seller Login / Signup</title>
+  <link rel="stylesheet" href="assets/seller.css" />
+</head>
+<body>
+
+<div class="auth-container">
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('login')">Login</div>
+    <div class="tab" onclick="showTab('signup')">Signup</div>
+  </div>
+
+  <!-- Login Form -->
+  <div id="loginForm" class="form-container active">
+    <input type="text" id="loginEmailOrPhone" placeholder="Email or Phone" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <div id="loginOtpSection" class="hidden">
+  <input type="text" id="loginOtp" placeholder="Enter OTP">
+  <button onclick="sendLoginOTP()">Send OTP</button>
+  <button onclick="verifyLoginOTP()">Verify OTP & Login</button>
+</div>
+
+    <button onclick="handleSellerLogin()">Login</button>
+  </div>
+
+  <!-- Signup Form -->
+  <div id="signupForm" class="form-container">
+    <input type="text" id="signupName" placeholder="Full Name" />
+    <input type="email" id="signupEmail" placeholder="Email" />
+    <input type="text" id="signupPhone" placeholder="Phone Number" />
+    <input type="text" id="signupVendorName" placeholder="Shop / Vendor Name" />
+    <input type="password" id="signupPassword" placeholder="Password" />
+
+    <div class="otp-section">
+      <button onclick="sendSellerOTP()">Send OTP</button>
+      <div id="otpVerifySection" class="hidden">
+        <input type="text" id="signupOtp" placeholder="Enter OTP" />
+        <button onclick="verifySellerOTP()">Verify OTP</button>
+      </div>
+    </div>
+
+    <button onclick="submitSellerSignup()">Sign Up</button>
+  </div>
+  <div id="forgotPasswordTab" class="tab-content">
+  <h2>Forgot Password</h2>
+  <input type="email" id="forgotEmail" placeholder="Enter your registered email">
+  <button onclick="sendForgotOtp()">Send OTP</button>
+
+  <div id="forgotOtpSection" class="hidden">
+    <input type="text" id="forgotOtp" placeholder="Enter OTP">
+    <button onclick="verifyForgotOtp()">Verify OTP</button>
+  </div>
+
+  <div id="resetPasswordSection" class="hidden">
+    <input type="password" id="forgotNewPassword" placeholder="Enter New Password">
+    <button onclick="resetForgotPassword()">Reset Password</button>
+  </div>
+</div>
+
+</div>
+
+
+<script>
+  function showTab(tab) {
+    const loginTab = document.querySelector(".tab:nth-child(1)");
+    const signupTab = document.querySelector(".tab:nth-child(2)");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+
+    if (tab === "login") {
+      loginTab.classList.add("active");
+      signupTab.classList.remove("active");
+      loginForm.classList.add("active");
+      signupForm.classList.remove("active");
+    } else {
+      signupTab.classList.add("active");
+      loginTab.classList.remove("active");
+      signupForm.classList.add("active");
+      loginForm.classList.remove("active");
+    }
+  }
+</script>
+
+<script src="assets/seller.js"></script>
+
+</body>
+</html>

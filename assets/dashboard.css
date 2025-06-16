@@ -11,6 +11,20 @@ body {
     resize: both;
     overflow: hidden;
 }
+.logout-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout-button:hover {
+    background-color: #c0392b;
+}
 
 /* Navbar */
 .navbar {
