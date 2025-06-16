@@ -16,7 +16,7 @@ async function sendSellerOTP() {
   button.textContent = "Sending...";
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/send-otp-email", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/send-otp-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -49,7 +49,7 @@ async function verifySellerOTP() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/verify-otp", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp })
@@ -87,7 +87,7 @@ async function submitSellerSignup() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/signup", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, phone, vendorName, password })
@@ -120,7 +120,7 @@ async function handleSellerLogin() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/login", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ emailOrPhone, password })
@@ -149,7 +149,7 @@ async function sendLoginOTP() {
   button.textContent = "Sending...";
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/send-otp-email", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/send-otp-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: emailOrPhone })
@@ -173,7 +173,7 @@ async function verifyLoginOTP() {
   if (!otp || !email) return alert("Enter OTP");
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/verify-otp", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp })
@@ -209,7 +209,7 @@ async function sendForgotOtp() {
   button.textContent = "Sending...";
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/forgot-password", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email })
@@ -238,7 +238,7 @@ async function verifyForgotOtp() {
   if (!resetEmail || !otp) return alert("Email and OTP required");
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/verify-otp", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: resetEmail, otp })
@@ -265,7 +265,7 @@ async function resetForgotPassword() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/sellers/forgot-password/reset", {
+    const res = await fetch("https://www.pureplucks.com/api/sellers/forgot-password/reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: resetEmail, newPassword })
