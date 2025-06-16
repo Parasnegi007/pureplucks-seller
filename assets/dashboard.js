@@ -36,7 +36,7 @@ async function addNewCategory() {
     formData.append("image", imageFile);
 
     try {
-        const response = await fetch("https://www.pureplucks.com/api/categories", {
+        const response = await fetch("https://pureplucks.com/api/categories", {
             method: "POST",
             body: formData,
         });
@@ -76,7 +76,7 @@ async function updateCategory(id) {
     }
 
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/categories/${id}`, {
+        const response = await fetch(`https://pureplucks.com/api/categories/${id}`, {
             method: "PUT",
             body: formData,
         });
@@ -99,7 +99,7 @@ async function deleteCategory(id) {
     }
 
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/categories/${id}`, {
+        const response = await fetch(`https://pureplucks.com/api/categories/${id}`, {
             method: "DELETE"
         });
 
@@ -117,7 +117,7 @@ async function deleteCategory(id) {
 // 📚 Load Categories in Edit Popup
 async function loadCategories() {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/categories");
+        const response = await fetch("https://pureplucks.com/api/categories");
         if (!response.ok) {
             throw new Error("Failed to fetch categories");
         }
@@ -260,7 +260,7 @@ function openCategoryPopup(categoryId) {
     const popup = document.getElementById('categoryPopup');
     const productList = document.getElementById('productList');
 
-    fetch(`https://www.pureplucks.com/api/products/category/${categoryId}`)
+    fetch(`https://pureplucks.com/api/products/category/${categoryId}`)
         .then(response => response.json())
         .then(products => {
             productList.innerHTML = '';
@@ -293,7 +293,7 @@ function closePopup(popupId = "orderDetailsPopup") {
 
 async function editProduct(productId) {
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/products/${productId}`);
+        const response = await fetch(`https://pureplucks.com/api/products/${productId}`);
         if (!response.ok) throw new Error(`Failed to fetch product details: ${response.statusText}`);
 
         const product = await response.json();
@@ -316,7 +316,7 @@ async function editProduct(productId) {
 
 async function deleteProduct(productId) {
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/products/${productId}`, { method: "DELETE" });
+        const response = await fetch(`https://pureplucks.com/api/products/${productId}`, { method: "DELETE" });
         if (response.ok) {
             const data = await response.json();
             console.log("✅ Product deleted:", data.message);
@@ -357,7 +357,7 @@ async function updateProduct() {
     if (productImage) formData.append("image", productImage);
 
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/products/${productId}`, {
+        const response = await fetch(`https://pureplucks.com/api/products/${productId}`, {
             method: "PUT",
             body: formData,
         });
@@ -401,7 +401,7 @@ function addNewProduct() {
     formData.append("featured", productFeatured);
     formData.append("outOfStock", productOutOfStock);
 
-    fetch("https://www.pureplucks.com/api/products", {
+    fetch("https://pureplucks.com/api/products", {
         method: "POST",
         body: formData,
     })
@@ -423,7 +423,7 @@ function addNewProduct() {
 
 async function loadCategoriesForProductForm(editMode = false, selectedCategoryId = null) {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/categories");
+        const response = await fetch("https://pureplucks.com/api/categories");
         if (!response.ok) throw new Error("Failed to fetch categories");
 
         const categories = await response.json();
@@ -453,7 +453,7 @@ async function loadCategoriesForProductForm(editMode = false, selectedCategoryId
 }
 
 function loadProducts() {
-    fetch("https://www.pureplucks.com/api/products")
+    fetch("https://pureplucks.com/api/products")
         .then((response) => response.json())
         .then((products) => {
             const productListContainer = document.getElementById("productListContainer");
@@ -492,7 +492,7 @@ async function openCategoryPopup(categoryId) {
     const productList = document.getElementById("productList");
 
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/products/category/${categoryId}`);
+        const response = await fetch(`https://pureplucks.com/api/products/category/${categoryId}`);
 
         // Handle 404 response gracefully
         if (response.status === 404) {
@@ -547,7 +547,7 @@ window.addEventListener("DOMContentLoaded", function () {
 window.addEventListener("DOMContentLoaded", fetchDashboardStats);
 async function fetchDashboardStats() {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/dashboard/stats");
+        const response = await fetch("https://pureplucks.com/api/dashboard/stats");
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -609,7 +609,7 @@ async function updateTotalOrdersChart() {
     }
 
     try {
-        const response = await fetch(`https://www.pureplucks.com/api/dashboard/orders?timePeriod=${currentTimePeriod}`, {
+        const response = await fetch(`https://pureplucks.com/api/dashboard/orders?timePeriod=${currentTimePeriod}`, {
             headers: {
                 Authorization: `Bearer ${token}` // ✅ Added auth header
             }
@@ -682,7 +682,7 @@ function hideAllCharts() {
 async function updateUserGrowthChart() {
     try {
         const token = localStorage.getItem("sellerAuthToken"); // Ensure the correct token key
-        const response = await fetch(`https://www.pureplucks.com/api/dashboard/users-growth?timePeriod=${currentTimePeriod}`, {
+        const response = await fetch(`https://pureplucks.com/api/dashboard/users-growth?timePeriod=${currentTimePeriod}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -718,7 +718,7 @@ function changeTimePeriod(period) {
 // Populate cities dynamically
 async function populateCities() {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/dashboard/cities");
+        const response = await fetch("https://pureplucks.com/api/dashboard/cities");
         const cities = await response.json();
 
         const citySelector = document.getElementById("citySelector");
@@ -738,7 +738,7 @@ async function populateCities() {
 // Update User Distribution chart
 async function updateUserDistributionChart() {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/dashboard/users-by-state");
+        const response = await fetch("https://pureplucks.com/api/dashboard/users-by-state");
         const data = await response.json();
 
         if (!data.states || !data.counts) {
@@ -919,10 +919,10 @@ function renderTotalProductsChart(labels, data) {
 // Fetch and update data for Total Products Chart
 async function updateTotalProductsChart() {
     try {
-        const response = await fetch("https://www.pureplucks.com/api/products");
+        const response = await fetch("https://pureplucks.com/api/products");
         const products = await response.json();
 
-        const categoryResponse = await fetch("https://www.pureplucks.com/api/categories");
+        const categoryResponse = await fetch("https://pureplucks.com/api/categories");
         const categories = await categoryResponse.json();
 
         const categoryMap = {};
@@ -950,7 +950,7 @@ async function fetchUsers() {
     console.log("✅ fetchUsers() function was called!");
 
     try {
-        const response = await fetch("https://www.pureplucks.com/api/users");
+        const response = await fetch("https://pureplucks.com/api/users");
         const users = await response.json();
         console.log("✅ Users received:", users); // Debug log to check response
 
@@ -1004,7 +1004,7 @@ function openPopup(id) {
 
 async function searchUsers() {
     const query = document.getElementById("searchUser").value;
-    const response = await fetch(`https://www.pureplucks.com/api/users/search?query=${query}`);
+    const response = await fetch(`https://pureplucks.com/api/users/search?query=${query}`);
     const users = await response.json();
 
     const manageUserList = document.getElementById("manageUserList");
@@ -1036,7 +1036,7 @@ async function loadOrders() {
     }
   
     try {
-      const res = await fetch(`https://www.pureplucks.com/api/dashboard/all-orders`, {
+      const res = await fetch(`https://pureplucks.com/api/dashboard/all-orders`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -1098,7 +1098,7 @@ async function loadOrders() {
   async function loadOrderDetails(orderId) {
     const token = localStorage.getItem('sellerAuthToken');
     try {
-      const res = await fetch(`https://www.pureplucks.com/api/dashboard/order/${orderId}`, {
+      const res = await fetch(`https://pureplucks.com/api/dashboard/order/${orderId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -1183,7 +1183,7 @@ async function loadOrders() {
   }
 
   try {
-    const response = await fetch(`https://www.pureplucks.com/api/dashboard/order-by-orderid/${input}`, {
+    const response = await fetch(`https://pureplucks.com/api/dashboard/order-by-orderid/${input}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -1279,7 +1279,7 @@ function renderOrderItem(order) {
     const courierPartner = document.getElementById("courierPartnerInput").value.trim();
 
     try {
-        const res = await fetch(`https://www.pureplucks.com/api/dashboard/order/${orderId}/status`, {
+        const res = await fetch(`https://pureplucks.com/api/dashboard/order/${orderId}/status`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
